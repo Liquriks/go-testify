@@ -22,18 +22,23 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	totalCount := 4
 	responseRecorder := getCafes(httptest.NewRequest(http.MethodGet, fmt.Sprintf("/cafe?count=5&city=moscow"), nil))
 
-	assert.Equal(t, (strings.Join(cafeList["moscow"][:totalCount], ",")), responseRecorder.Body.Bytes())
-	body := responseRecorder.Body.String()
-	assert.Equal(t, "wrong city value", body)
+	status := responseRecorder.Code
+	statusExpected := http.StatusOK
+
+	answer := responseRecorder.Body.String()
+	list := strings.Split(answer, ",")
+	countExpected := totalCount
+
+	require.Equal(t, statusExpected, status)
+	assert.Len(t, list, countExpected)
 
 }
 
 func TestMainHandlerWhenOk(t *testing.T) {
 
 	responseRecorder := getCafes(httptest.NewRequest(http.MethodGet, fmt.Sprintf("/cafe?count=2&city=moscow"), nil))
-	require.NotEmpty(t, responseRecorder.Code)
-	assert.Equal(t, http.StatusOK, responseRecorder.Code)
-	assert.Equal(t, (strings.Join(cafeList["moscow"][:2], ",")), responseRecorder.Body.Bytes())
+	require.Equal(t, http.StatusOK, responseRecorder.Code)
+	assert.Equal(t, (strings.Join(cafeList["moscow"][:2], ",")), responseRecorder.Body.String())
 }
 
 func TestWhenWrongCity(t *testing.T) {
